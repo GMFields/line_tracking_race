@@ -1,0 +1,9 @@
+build:
+    - 'catkin build line_tracking_race'
+
+command on terminal
+    - 'source ~/catkin_ws/devel/setup.bash'
+    - 'source /opt/ros/noetic/setup.bash'
+
+launch:
+    - 'roslaunch line_tracking_race race_track.launch'
