@@ -18,7 +18,7 @@ def ImgCallBack(data: Image) -> None:
     # Convertion from ROS Image to CV Image
     cv_img = bridge.imgmsg_to_cv2(data, "bgr8")
     
-    # IMAGE CROPPING
+    # Crop img in rows 240:360 and cols 1:width
     _, width, _ = cv_img.shape
     crop_img = cv_img[240:360, 1:width]
 
