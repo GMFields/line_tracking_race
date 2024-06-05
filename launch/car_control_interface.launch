@@ -18,5 +18,7 @@
   </node>
 
   <!-- TODO Launch python files form here!-->
+  <!-- <node name="image_handler" pkg="line_tracking_race" type="image_handler.py" output="screen" />
+  <node name="controller" pkg="line_tracking_race" type="controller.py" output="screen" /> !-->
 
 </launch>

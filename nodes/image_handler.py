@@ -5,14 +5,14 @@ import cv2
 import numpy as np
 from std_msgs.msg import Float32
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
+from cv_bridge import CvBridge
 
 bridge = CvBridge()
 
 # Define global variables with initial values
 cx, cy = 0.0, 0.0
 
-def ImgCallBack(data: Image) -> None:
+def img_processor(data: Image) -> None:
     global cx, cy  # Declare as global to modify the global variables
     
     # Convertion from ROS Image to CV Image
@@ -27,7 +27,7 @@ def ImgCallBack(data: Image) -> None:
 
     # Limits in HSV -> Only passes yellow color from line
     lower_limit = np.array([20, 100, 100])
-    upper_limit = np.array([50, 255, 255])
+    upper_limit = np.array([30, 255, 255])
 
     # Create Mask, 255 bit for image between limits, 0 for those out of bounds
     mask_img = cv2.inRange(hsv_img, lower_limit, upper_limit)
@@ -43,7 +43,8 @@ def ImgCallBack(data: Image) -> None:
     except ZeroDivisionError:
         cx, cy = width / 2, (360 - 240) / 2
     
-    print(cx, cy)
+    # Debugging prints
+    rospy.loginfo(f"cx: {cx}, cy: {cy}")
 
     cv2.circle(res_img, (int(cx), int(cy)), 5, (255, 0, 0), -1)
 
@@ -54,17 +55,20 @@ def ImgCallBack(data: Image) -> None:
     cv2.imshow("TRACKER", res_img_rsz)
     cv2.waitKey(1)
 
-def node():
-    # SUBSCRIBER
-    rospy.Subscriber("/car/image_raw", Image, ImgCallBack)
+def node() -> None:
+    # Initialize node
+    rospy.init_node('image_handler')
+
+    # Subscribe, Receive and Handle image from car's camera
+    rospy.Subscriber("/car/image_raw", Image, img_processor)
     
-    # PUBLISHER
-    pub = rospy.Publisher('image_data', Float32, queue_size=15)
-    rospy.init_node('image_data')
+    # Create publisher to contact main controller
+    pub = rospy.Publisher('/image_data', Float32, queue_size=15)
     rate = rospy.Rate(25)  # 25Hz
 
-    global cx  # Declare as global to access the global variable
+    global cx 
     while not rospy.is_shutdown():
+        # Publish position of center of yellow line
         pub.publish(cx)
         rate.sleep()
 
